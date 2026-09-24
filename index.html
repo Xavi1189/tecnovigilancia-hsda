@@ -61,6 +61,7 @@ input.invalid,select.invalid,textarea.invalid{border-color:var(--danger)}
 .upper{text-transform:uppercase}
 .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}
 .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 16px}
+.edad-row{display:flex;gap:8px}.edad-row input{flex:1;min-width:0}.edad-row select{width:auto;flex:0 0 auto;padding-left:14px;padding-right:14px}
 .hint{font-size:.82rem;color:var(--text-muted);padding-left:4px;margin-top:6px}
 
 .pills{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
@@ -180,7 +181,7 @@ button:focus-visible{outline:2px solid var(--text-main);outline-offset:3px}
             <label class="lbl" for="notifArea">Área o servicio <span class="req">*</span></label>
             <select id="notifArea" data-req="área o servicio">
               <option value="">Seleccione...</option>
-              <option>Urgencias</option><option>Hospitalización 3er piso</option><option>Hospitalización 4.º piso</option><option>Quirófano</option><option>Terapia intensiva</option><option>CEyE</option><option>Almacén</option><option>Biomédica</option>
+              <option>Urgencias</option><option>Hospitalización 3er piso</option><option>Hospitalización 4.º piso</option><option>Quirófano</option><option>UCI</option><option>UCIN</option><option>Cunas</option><option>CEyE</option><option>Almacén</option><option>Biomédica</option>
             </select>
           </div>
           <div class="input-wrapper">
@@ -244,9 +245,9 @@ button:focus-visible{outline:2px solid var(--text-main);outline-offset:3px}
           </div>
         </div>
         <div class="grid-3">
-          <div class="input-wrapper"><label class="lbl" for="pacEdad">Edad (años)</label><input type="number" id="pacEdad" min="0" max="120" inputmode="numeric"></div>
+          <div class="input-wrapper"><label class="lbl" for="pacEdad">Edad</label><div class="edad-row"><input type="number" id="pacEdad" min="0" max="120" inputmode="numeric"><select id="pacEdadUnidad" aria-label="Unidad de edad"><option value="años">años</option><option value="meses">meses</option></select></div></div>
           <div class="input-wrapper"><label class="lbl" for="pacPeso">Peso (kg)</label><input type="number" id="pacPeso" min="0" step="0.1" inputmode="decimal"></div>
-          <div class="input-wrapper"><label class="lbl" for="pacEstatura">Estatura (m)</label><input type="number" id="pacEstatura" min="0" max="2.5" step="0.01" inputmode="decimal"></div>
+          <div class="input-wrapper"><label class="lbl" for="pacEstatura">Estatura (cm)</label><input type="number" id="pacEstatura" min="0" max="250" step="1" inputmode="numeric"></div>
         </div>
         <div class="input-wrapper">
           <div class="label-row">
@@ -530,7 +531,7 @@ button:focus-visible{outline:2px solid var(--text-main);outline-offset:3px}
       fechaNotif:v('fechaNotif'), ...HOSPITAL,
       nIniciales:v('nIniciales').toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ]/g,''), notifArea:v('notifArea'), prof:v('prof'), profOtroTxt:v('profOtroTxt'),
       presento:radio('presento'), opIniciales:v('opIniciales'), operador:radio('operador'), opOtroTxt:v('opOtroTxt'),
-      pacClave:v('pacClave'), pacEdad:v('pacEdad'), pacPeso:v('pacPeso'), pacEstatura:v('pacEstatura'), genero:radio('genero'), resumen:v('resumen'),
+      pacClave:v('pacClave'), pacEdad:v('pacEdad'), pacEdadUnidad:v('pacEdadUnidad'), pacPeso:v('pacPeso'), pacEstatura:v('pacEstatura'), genero:radio('genero'), resumen:v('resumen'),
       fechaInc:v('fechaInc'), ev:checked('ev'), evOtroTxt:v('evOtroTxt'), evUsoDifTxt:v('evUsoDifTxt'), descripcion:v('descripcion'),
       cons:checked('cons'), consOtroTxt:v('consOtroTxt'),
       marca:v('marca'), generica:v('generica'), modelo:v('modelo'), serieLote:v('serieLote'), fabricante:v('fabricante'), registro:v('registro'),
@@ -565,7 +566,8 @@ button:focus-visible{outline:2px solid var(--text-main);outline-offset:3px}
       folioInterno:'FOLIO INTERNO HSDA: '+folio, lugarNotif:d.lugarNotif, notifIniciales:d.nIniciales, notifArea:d.notifArea,
       opIniciales:d.opIniciales, lugEstado:d.lugEstado, lugMunicipio:d.lugMunicipio, lugLocalidad:d.lugLocalidad, lugOtroTxt:'HOSPITAL',
       institucion:d.institucion, domicilio:d.domicilio,
-      pacClave:d.pacClave, pacEdad:d.pacEdad, pacPeso:d.pacPeso, pacEstatura:d.pacEstatura,
+      pacClave:d.pacClave, pacEdad: d.pacEdad && d.pacEdadUnidad==='meses' ? d.pacEdad+' MESES' : d.pacEdad, pacPeso:d.pacPeso,
+      pacEstatura: d.pacEstatura ? (Number(d.pacEstatura)/100).toFixed(2) : '',
       marca:d.marca, generica:d.generica, modelo:d.modelo, serieLote:d.serieLote, fabricante:d.fabricante, registro:d.registro
     };
     if(fn){ t.fnDia=pad(fn.getDate()); t.fnMes=pad(fn.getMonth()+1); t.fnAnio=String(fn.getFullYear()); }
@@ -650,7 +652,7 @@ button:focus-visible{outline:2px solid var(--text-main);outline-offset:3px}
           fechaNotificacion:d.fechaNotif, fechaIncidente:d.fechaInc, iniciales:d.nIniciales, area:d.notifArea,
           profesion: d.prof==='Otro' ? d.profOtroTxt : d.prof, presento:d.presento==='si'?'Sí':'No',
           operador: d.operador==='otro' ? 'Otro: '+d.opOtroTxt : LABELS.operador[d.operador],
-          paciente:[d.pacClave, d.pacEdad && d.pacEdad+' años', d.genero].filter(Boolean).join(' · '),
+          paciente:[d.pacClave, d.pacEdad && d.pacEdad+' '+d.pacEdadUnidad, d.pacPeso && d.pacPeso+' kg', d.pacEstatura && d.pacEstatura+' cm', d.genero].filter(Boolean).join(' · '),
           dispositivo:d.generica, marca:d.marca, modelo:d.modelo, lote:d.serieLote, registro:d.registro, fabricante:d.fabricante,
           consecuencias:cons, descripcion:d.descripcion
         }
