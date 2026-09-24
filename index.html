@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#3C5775">
+<link rel="icon" href="hsda-logo.jpg">
+<title>Tecnovigilancia HSDA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Jost:ital,wght@0,100..900;1,100..900&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --primary:#3C5775; --primary-light:#A5B7CF; --cta:#77857F; --bg-liquid:#F8F4EF;
+  --text-main:#33394C; --text-muted:#5C6275; --danger:#B42318;
+  --glass-bg:rgba(255,255,255,.45); --glass-border:rgba(255,255,255,.4);
+  --shadow:0 20px 50px rgba(60,87,117,.1);
+  --transition:all .6s cubic-bezier(.23,1,.32,1);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden],.hidden{display:none!important}
+body{font-family:"Jost","Avenir Next","Segoe UI",sans-serif;color:var(--text-main);background:var(--bg-liquid);min-height:100%;overflow-x:hidden;display:flex;justify-content:center}
+.background-blobs{position:fixed;inset:0;z-index:0;overflow:hidden;filter:blur(80px);pointer-events:none}
+.blob{position:absolute;width:500px;height:500px;border-radius:50%;opacity:.5}
+.blob-1{background:#DCE4EE;top:-10%;left:-10%}
+.blob-2{background:#A5B7CF;bottom:-10%;right:-10%}
+.blob-3{background:#EDE4D8;top:40%;left:30%;width:400px;height:400px}
+@media (prefers-reduced-motion:no-preference){
+  .blob{animation:move 20s ease infinite alternate}
+  .blob-2{animation-delay:-5s}.blob-3{animation-delay:-10s}
+}
+@keyframes move{0%{transform:translate(0,0) scale(1)}100%{transform:translate(100px,100px) scale(1.2)}}
+
+.app-container{width:100%;max-width:640px;padding:24px;position:relative;z-index:10}
+.progress-bar-container{width:100%;height:4px;background:rgba(60,87,117,.1);border-radius:10px;margin-bottom:30px;overflow:hidden}
+.progress-bar{height:100%;width:16.66%;background:linear-gradient(90deg,var(--primary),var(--primary-light));border-radius:10px;transition:width .8s cubic-bezier(.65,0,.35,1)}
+.main-header{text-align:center;margin-bottom:36px;display:flex;flex-direction:column;align-items:center;gap:15px}
+.pro-logo{width:140px;max-width:40vw;aspect-ratio:1;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.05)}
+.main-header h1{font-family:"Bodoni Moda",Georgia,serif;font-size:2rem;font-weight:700;color:var(--primary);display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;line-height:1.15}
+.header-text p{margin-top:6px;font-size:1.05rem}
+.header-text .sub{font-size:.8rem;color:var(--text-muted);margin-top:2px;letter-spacing:.02em}
+
+.pro-form{position:relative}
+.form-step{display:none;background:var(--glass-bg);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);border:1px solid var(--glass-border);border-radius:32px;padding:40px;box-shadow:var(--shadow);position:relative}
+.form-step.active{display:block}
+@media (prefers-reduced-motion:no-preference){.form-step.active{animation:stepIn .6s cubic-bezier(.23,1,.32,1)}}
+@keyframes stepIn{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:none}}
+.step-number{font-family:"Bodoni Moda",serif;font-size:3rem;font-style:italic;opacity:.1;position:absolute;top:20px;right:30px;pointer-events:none}
+.form-step h2{font-family:"Bodoni Moda",Georgia,serif;font-size:1.8rem;margin-bottom:10px;color:var(--text-main);padding-right:60px;line-height:1.2;text-wrap:balance}
+.step-guide{font-size:1rem;color:var(--text-muted);margin-bottom:28px}
+.cofepris-ref{display:inline-block;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--primary);margin-bottom:8px;font-weight:600}
+.input-wrapper{margin-bottom:22px}
+label.lbl,.lbl{display:block;font-weight:600;font-size:.85rem;margin-bottom:8px;padding-left:4px;color:var(--primary)}
+.req{color:var(--danger)}
+input[type=text],input[type=number],input[type=date],textarea,select{width:100%;padding:16px 20px;background:rgba(255,255,255,.8);border:1px solid rgba(60,87,117,.15);border-radius:16px;font-family:"Jost",sans-serif;font-size:1rem;transition:var(--transition);color:var(--text-main)}
+textarea{resize:vertical;min-height:130px;line-height:1.5}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--primary);background:#fff;box-shadow:0 10px 30px rgba(60,87,117,.1)}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+input.invalid,select.invalid,textarea.invalid{border-color:var(--danger)}
+.upper{text-transform:uppercase}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:0 20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:0 16px}
+.hint{font-size:.82rem;color:var(--text-muted);padding-left:4px;margin-top:6px}
+
+.pills{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.pill{position:relative}
+.pill input{position:absolute;opacity:0;inset:0;margin:0;cursor:pointer}
+.pill span{display:inline-block;padding:11px 18px;border-radius:14px;background:rgba(255,255,255,.7);border:1px solid rgba(60,87,117,.15);font-size:.95rem;cursor:pointer;transition:var(--transition);user-select:none}
+.pill input:checked + span{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:0 8px 20px rgba(60,87,117,.25)}
+.pill input:focus-visible + span{outline:2px solid var(--primary);outline-offset:2px}
+.pill:hover span{border-color:var(--primary)}
+.pills.invalid .pill span{border-color:var(--danger)}
+input[type=text].otro-txt{flex:1 1 180px;min-width:150px;padding:11px 16px;border-radius:14px;font-size:.95rem;border-style:dashed}
+input[type=text].otro-txt:focus{border-style:solid}
+
+.checklist{display:grid;gap:8px}
+.check{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:12px 16px;background:rgba(255,255,255,.6);border:1px solid rgba(60,87,117,.12);border-radius:14px;transition:var(--transition)}
+.check:has(input[type=checkbox]:checked){background:#fff;border-color:var(--primary)}
+.check label{display:flex;align-items:flex-start;gap:12px;cursor:pointer;flex:1 1 220px;font-size:.95rem;line-height:1.35}
+.check input[type=checkbox]{appearance:none;-webkit-appearance:none;width:20px;height:20px;flex:none;border-radius:6px;border:1.5px solid rgba(60,87,117,.45);background:#fff;margin-top:1px;cursor:pointer;display:grid;place-items:center;transition:var(--transition)}
+.check input[type=checkbox]:checked{background:var(--primary);border-color:var(--primary)}
+.check input[type=checkbox]:checked::after{content:"";width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg) translate(-1px,-1px)}
+.check input[type=checkbox]:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.check .otro-txt{flex:1 1 200px}
+
+.yn-row{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px 16px;padding:12px 0;border-bottom:1px solid rgba(60,87,117,.1)}
+.yn-row:last-child{border-bottom:0}
+.yn-row span.q{font-size:.95rem;flex:1 1 240px}
+
+
+.step-error{color:var(--danger);font-size:.9rem;margin-top:4px;padding-left:4px}
+.step-actions{display:flex;gap:15px;margin-top:24px}
+button{flex:1;padding:18px;border-radius:18px;font-family:"Jost",sans-serif;font-weight:700;font-size:1rem;cursor:pointer;transition:var(--transition);border:none}
+.next-step,.submit-pro{background:var(--primary);color:#fff}
+.next-step:hover,.submit-pro:hover{background:var(--text-main);transform:translateY(-4px);box-shadow:0 15px 30px rgba(60,87,117,.3)}
+.prev-step{background:rgba(60,87,117,.05);color:var(--primary);max-width:130px}
+.prev-step:hover{background:rgba(60,87,117,.1)}
+button:focus-visible{outline:2px solid var(--text-main);outline-offset:3px}
+.final-check{background:#EEF2F7;border-radius:20px;padding:18px 20px;display:flex;align-items:center;gap:15px;border:1px solid #A5B7CF;margin-top:8px;font-size:.95rem}
+.check-icon{font-size:1.4rem;color:#3C5775;font-weight:700}
+.pro-footer{text-align:center;margin-top:30px;font-size:.8rem;color:var(--text-muted);padding-bottom:10px}
+
+.pro-modal{position:fixed;inset:0;background:rgba(248,244,239,.85);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:flex;align-items:center;justify-content:center;z-index:2000;padding:16px}
+.modal-glass{background:#fff;padding:44px 36px;border-radius:40px;text-align:center;box-shadow:0 30px 100px rgba(0,0,0,.1);max-width:460px;width:100%}
+.modal-glass h3{font-family:"Bodoni Moda",serif;font-size:1.8rem;margin-bottom:8px}
+.spinner{width:50px;height:50px;border:5px solid #E3E9F1;border-top-color:var(--primary);border-radius:50%;animation:rotate 1s linear infinite;margin:0 auto 20px}
+@keyframes rotate{100%{transform:rotate(360deg)}}
+.success-ring{width:72px;height:72px;border-radius:50%;background:#EEF2F7;border:2px solid var(--cta);display:grid;place-items:center;margin:0 auto 18px}
+.success-ring::after{content:"";width:14px;height:26px;border:solid var(--cta);border-width:0 4px 4px 0;transform:rotate(45deg) translate(-2px,-3px)}
+.folio-badge{display:inline-block;padding:12px 24px;background:var(--text-main);color:#fff;border-radius:12px;font-weight:700;font-size:1.3rem;margin:14px 0 8px;letter-spacing:2px;font-variant-numeric:tabular-nums}
+.modal-note{font-size:.9rem;color:var(--text-muted);margin:10px 0 20px}
+.modal-actions{display:grid;gap:12px}
+.btn-download{background:var(--primary);color:#fff}
+.btn-download:hover{background:var(--text-main)}
+.btn-restart{background:var(--cta);color:#fff}
+.btn-back{background:rgba(60,87,117,.05);color:var(--primary)}
+.label-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.label-row .lbl{margin-bottom:0}
+.voice-trigger{flex:0 0 auto;width:auto;padding:6px 12px;border-radius:999px;background:rgba(60,87,117,.08);display:flex;align-items:center;gap:8px;color:var(--primary);font-size:.85rem;font-weight:600}
+.voice-trigger:hover{background:rgba(60,87,117,.15)}
+.mic-icon-anim{width:10px;height:10px;background:var(--primary);border-radius:50%}
+.voice-trigger.recording{background:#FBE9E7;color:var(--danger)}
+.voice-trigger.recording .mic-icon-anim{background:var(--danger)}
+@media (prefers-reduced-motion:no-preference){.voice-trigger.recording .mic-icon-anim{animation:pulseMic 1s infinite}}
+@keyframes pulseMic{0%{transform:scale(1);box-shadow:0 0 0 0 rgba(180,35,24,.6)}70%{transform:scale(1.5);box-shadow:0 0 0 10px rgba(180,35,24,0)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(180,35,24,0)}}
+.error-ring{width:72px;height:72px;border-radius:50%;background:#FBE9E7;border:2px solid var(--danger);display:grid;place-items:center;margin:0 auto 18px;color:var(--danger);font-size:2rem;font-weight:700}
+.modal-msg{font-size:.88rem;margin-top:12px;color:var(--text-muted)}
+.modal-msg.err{color:var(--danger)}
+
+@media (max-width:600px){
+  .grid-2,.grid-3{grid-template-columns:1fr}
+  .form-step{padding:30px 22px;border-radius:26px}
+  .app-container{padding:16px}
+  .main-header h1{font-size:1.7rem}
+  .form-step h2{font-size:1.5rem}
+  .prev-step{max-width:110px}
+}
+</style>
+</head>
+<body>
+<div class="background-blobs" aria-hidden="true">
+  <div class="blob blob-1"></div><div class="blob blob-2"></div><div class="blob blob-3"></div>
+</div>
+
+<div class="app-container">
+  <div class="progress-bar-container"><div class="progress-bar" id="progressBar"></div></div>
+
+  <header class="main-header">
+    <img src="hsda-logo.jpg" alt="Logotipo del Hospital San Diego de Alcalá" class="pro-logo">
+    <div class="header-text">
+      <h1>Tecnovigilancia</h1>
+      <p>Hospital San Diego de Alcalá</p>
+      <p class="sub">Notificación de incidentes de dispositivos médicos · COFEPRIS</p>
+    </div>
+  </header>
+
+  <main>
+    <form id="tvForm" class="pro-form" novalidate>
+
+      <div class="form-step active" data-step="1">
+        <span class="step-number">01</span>
+        <span class="cofepris-ref">Secciones 1 y 2 del formato</span>
+        <h2>¿Quién reporta?</h2>
+        <p class="step-guide">Comencemos con los datos de la notificación y de quien la presenta.</p>
+
+        <div class="grid-2">
+          <div class="input-wrapper">
+            <label class="lbl" for="fechaNotif">Fecha de la notificación <span class="req">*</span></label>
+            <input type="date" id="fechaNotif" data-req="fecha de la notificación">
+          </div>
+          <div class="input-wrapper">
+            <label class="lbl" for="nIniciales">Iniciales <span class="req">*</span></label>
+            <input type="text" id="nIniciales" class="upper" maxlength="6" placeholder="Ej. PBJ" autocomplete="off" data-req="tus iniciales">
+            <p class="hint">Inicia por apellido paterno.</p>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="input-wrapper">
+            <label class="lbl" for="notifArea">Área o servicio <span class="req">*</span></label>
+            <select id="notifArea" data-req="área o servicio">
+              <option value="">Seleccione...</option>
+              <option>Urgencias</option><option>Hospitalización 3er piso</option><option>Hospitalización 4.º piso</option><option>Quirófano</option><option>Terapia intensiva</option><option>CEyE</option><option>Almacén</option><option>Biomédica</option>
+            </select>
+          </div>
+          <div class="input-wrapper">
+            <label class="lbl" for="prof">Profesión</label>
+            <select id="prof">
+              <option value="">Seleccione...</option>
+              <option>Enfermería</option><option>Medicina</option><option>Ingeniería biomédica</option><option>Otro</option>
+            </select>
+            <input type="text" id="profOtroTxt" class="otro-txt" placeholder="Si es otra, especifique" style="margin-top:10px;width:100%" aria-label="Otra profesión, especifique">
+          </div>
+        </div>
+        <div class="input-wrapper">
+          <span class="lbl" id="lblPresento">¿Usted presentó el incidente? <span class="req">*</span></span>
+          <div class="pills" role="radiogroup" aria-labelledby="lblPresento" data-req-group="presento" data-req="si usted presentó el incidente">
+            <label class="pill"><input type="radio" name="presento" value="si" id="presento-si"><span>Sí</span></label>
+            <label class="pill"><input type="radio" name="presento" value="no" id="presento-no"><span>No</span></label>
+          </div>
+        </div>
+
+
+        <p class="step-error" hidden></p>
+        <div class="step-actions">
+          <button type="button" class="next-step">Siguiente Paso →</button>
+        </div>
+      </div>
+
+      <div class="form-step" data-step="2">
+        <span class="step-number">02</span>
+        <span class="cofepris-ref">Secciones 3 y 4 del formato</span>
+        <h2>Operador y paciente</h2>
+        <p class="step-guide">¿Quién usaba el dispositivo y a quién afectó?</p>
+
+        <div class="input-wrapper">
+          <label class="lbl" for="opIniciales">Iniciales del operador</label>
+          <input type="text" id="opIniciales" class="upper" maxlength="6" placeholder="Apellido paterno primero">
+        </div>
+        <div class="input-wrapper">
+          <span class="lbl" id="lblOperador">¿Quién operaba el dispositivo? <span class="req">*</span></span>
+          <div class="pills" role="radiogroup" aria-labelledby="lblOperador" data-req-group="operador" data-req="quién operaba el dispositivo">
+            <label class="pill"><input type="radio" name="operador" value="tecnico"><span>Técnico</span></label>
+            <label class="pill"><input type="radio" name="operador" value="enfermera"><span>Enfermera</span></label>
+            <label class="pill"><input type="radio" name="operador" value="medico"><span>Médico</span></label>
+            <label class="pill"><input type="radio" name="operador" value="paciente"><span>Paciente</span></label>
+            <label class="pill"><input type="radio" name="operador" value="familiar"><span>Familiar</span></label>
+            <label class="pill"><input type="radio" name="operador" value="otro" id="op-otro"><span>Otro</span></label>
+            <input type="text" class="otro-txt" id="opOtroTxt" data-check="op-otro" placeholder="Especifique" aria-label="Otro operador, especifique">
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="input-wrapper">
+            <label class="lbl" for="pacClave">Iniciales o clave del paciente</label>
+            <input type="text" id="pacClave" class="upper" placeholder="No escriba el nombre">
+          </div>
+          <div class="input-wrapper">
+            <span class="lbl" id="lblGenero">Género</span>
+            <div class="pills" role="radiogroup" aria-labelledby="lblGenero">
+              <label class="pill"><input type="radio" name="genero" value="F"><span>F</span></label>
+              <label class="pill"><input type="radio" name="genero" value="M"><span>M</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="grid-3">
+          <div class="input-wrapper"><label class="lbl" for="pacEdad">Edad (años)</label><input type="number" id="pacEdad" min="0" max="120" inputmode="numeric"></div>
+          <div class="input-wrapper"><label class="lbl" for="pacPeso">Peso (kg)</label><input type="number" id="pacPeso" min="0" step="0.1" inputmode="decimal"></div>
+          <div class="input-wrapper"><label class="lbl" for="pacEstatura">Estatura (m)</label><input type="number" id="pacEstatura" min="0" max="2.5" step="0.01" inputmode="decimal"></div>
+        </div>
+        <div class="input-wrapper">
+          <div class="label-row">
+            <label class="lbl" for="resumen">Resumen de la historia clínica</label>
+            <button type="button" class="voice-trigger" data-target="resumen" hidden><span class="mic-icon-anim"></span><span class="voice-label">Dictar por voz</span></button>
+          </div>
+          <textarea id="resumen" rows="4" placeholder="Diagnóstico, procedimiento en curso y antecedentes relacionados con el incidente..."></textarea>
+        </div>
+
+        <p class="step-error" hidden></p>
+        <div class="step-actions">
+          <button type="button" class="prev-step">← Volver</button>
+          <button type="button" class="next-step">Continuar →</button>
+        </div>
+      </div>
+
+      <div class="form-step" data-step="3">
+        <span class="step-number">03</span>
+        <span class="cofepris-ref">Sección 5 del formato</span>
+        <h2>¿Qué pasó con el dispositivo?</h2>
+        <p class="step-guide">Marca los eventos que no corresponden al uso normal del dispositivo.</p>
+
+        <div class="input-wrapper">
+          <label class="lbl" for="fechaInc">Fecha del incidente <span class="req">*</span></label>
+          <input type="date" id="fechaInc" data-req="fecha del incidente">
+        </div>
+
+        <div class="checklist input-wrapper">
+          <div class="check"><label><input type="checkbox" name="ev" value="noPrendio">No prendió</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="toques">Dio "toques"</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="quemo">Se quemó</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="rompio">Se rompió o quebró</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="cayo">Se cayó o golpeó</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="alarma">No sonó la alarma conforme a lo programado o especificado por el fabricante</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="empaque">Empaque maltratado que puede poner en duda la esterilidad</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="reutilizacion">Reutilización de un dispositivo de un solo uso</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="reacondicionamiento">Reacondicionamiento o reparación de un dispositivo de un solo uso</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="error">Indica error (resultados erróneos, usuario, etc.)</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="noFunciona">No funciona como se indica en el manual o se bloqueó</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="desconexion">Desconexión, mala conexión o separación</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="etiquetado">Información del etiquetado o empaque incompleta o confusa</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="suministro">Suministro eléctrico insuficiente o inadecuado</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="desconocimiento">Desconocimiento del funcionamiento</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="interacciones">Interacciones con otras sustancias o productos</label></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="otros" id="ev-otros">Otros</label><input type="text" class="otro-txt" id="evOtroTxt" data-check="ev-otros" placeholder="Especifique" aria-label="Otros eventos, especifique"></div>
+          <div class="check"><label><input type="checkbox" name="ev" value="usoDiferente" id="ev-uso">Uso diferente al indicado por el fabricante</label><input type="text" class="otro-txt" id="evUsoDifTxt" data-check="ev-uso" placeholder="Especifique cómo" aria-label="Uso diferente, especifique cómo"></div>
+        </div>
+
+        <p class="step-error" hidden></p>
+        <div class="step-actions">
+          <button type="button" class="prev-step">← Volver</button>
+          <button type="button" class="next-step">Continuar →</button>
+        </div>
+      </div>
+
+      <div class="form-step" data-step="4">
+        <span class="step-number">04</span>
+        <span class="cofepris-ref">Sección 5 del formato</span>
+        <h2>Describe lo sucedido</h2>
+        <p class="step-guide">Cuenta qué pasó y qué consecuencia tuvo para el paciente. Puedes usar el dictado por voz.</p>
+
+        <div class="input-wrapper">
+          <div class="label-row">
+            <label class="lbl" for="descripcion">Descripción y consecuencia del incidente <span class="req">*</span></label>
+            <button type="button" class="voice-trigger" data-target="descripcion" hidden><span class="mic-icon-anim"></span><span class="voice-label">Dictar por voz</span></button>
+          </div>
+          <textarea id="descripcion" rows="6" placeholder="Qué se estaba haciendo, qué falló, qué se observó en el paciente y qué se hizo..." data-req="la descripción del incidente"></textarea>
+        </div>
+
+        <span class="lbl">Consecuencia del incidente</span>
+        <div class="checklist input-wrapper">
+          <div class="check"><label><input type="checkbox" name="cons" value="muerte">Muerte</label></div>
+          <div class="check"><label><input type="checkbox" name="cons" value="intMedica">Intervención médica</label></div>
+          <div class="check"><label><input type="checkbox" name="cons" value="intQuirurgica">Intervención quirúrgica</label></div>
+          <div class="check"><label><input type="checkbox" name="cons" value="danoIndirecto">Daño indirecto</label></div>
+          <div class="check"><label><input type="checkbox" name="cons" value="fetal">Daño o muerte fetal</label></div>
+          <div class="check"><label><input type="checkbox" name="cons" value="deficiencia">Deficiencia permanente de una función corporal</label></div>
+          <div class="check"><label><input type="checkbox" name="cons" value="danoEstructura">Daño permanente a una estructura corporal</label></div>
+          <div class="check"><label><input type="checkbox" name="cons" value="hospitalizacion">Hospitalización</label></div>
+          <div class="check"><label><input type="checkbox" name="cons" value="otro" id="cons-otro">Otro</label><input type="text" class="otro-txt" id="consOtroTxt" data-check="cons-otro" placeholder="Especifique" aria-label="Otra consecuencia, especifique"></div>
+        </div>
+
+        <p class="step-error" hidden></p>
+        <div class="step-actions">
+          <button type="button" class="prev-step">← Volver</button>
+          <button type="button" class="next-step">Continuar →</button>
+        </div>
+      </div>
+
+      <div class="form-step" data-step="5">
+        <span class="step-number">05</span>
+        <span class="cofepris-ref">Sección 6 del formato</span>
+        <h2>El dispositivo médico</h2>
+        <p class="step-guide">Los datos vienen en la etiqueta o el empaque.</p>
+
+        <div class="input-wrapper">
+          <label class="lbl" for="generica">Denominación genérica <span class="req">*</span></label>
+          <input type="text" id="generica" placeholder="Ej. Equipo de venoclisis, bomba de infusión" data-req="la denominación genérica">
+        </div>
+        <div class="grid-2">
+          <div class="input-wrapper"><label class="lbl" for="marca">Marca o denominación distintiva</label><input type="text" id="marca"></div>
+          <div class="input-wrapper"><label class="lbl" for="modelo">Modelo, código o n.º de catálogo</label><input type="text" id="modelo"></div>
+        </div>
+        <div class="grid-2">
+          <div class="input-wrapper"><label class="lbl" for="serieLote">Número de serie o lote</label><input type="text" id="serieLote"></div>
+          <div class="input-wrapper"><label class="lbl" for="registro">Registro sanitario</label><input type="text" id="registro"></div>
+        </div>
+        <div class="input-wrapper"><label class="lbl" for="fabricante">Fabricante, distribuidor o comercializador</label><input type="text" id="fabricante"></div>
+
+        <div class="input-wrapper">
+          <span class="lbl" id="lblUso">Uso del dispositivo en</span>
+          <div class="pills" role="radiogroup" aria-labelledby="lblUso">
+            <label class="pill"><input type="radio" name="uso" value="tratamiento"><span>Tratamiento</span></label>
+            <label class="pill"><input type="radio" name="uso" value="diagnostico"><span>Diagnóstico</span></label>
+            <label class="pill"><input type="radio" name="uso" value="monitoreo"><span>Monitoreo</span></label>
+            <label class="pill"><input type="radio" name="uso" value="otro" id="uso-otro"><span>Otro</span></label>
+            <input type="text" class="otro-txt" id="usoOtroTxt" data-check="uso-otro" placeholder="Especifique" aria-label="Otro uso, especifique">
+          </div>
+        </div>
+        <div class="input-wrapper">
+          <span class="lbl" id="lblPob">Diseñado para usarse en paciente</span>
+          <div class="pills" role="radiogroup" aria-labelledby="lblPob">
+            <label class="pill"><input type="radio" name="pob" value="adulto"><span>Adulto</span></label>
+            <label class="pill"><input type="radio" name="pob" value="pediatrico"><span>Pediátrico</span></label>
+            <label class="pill"><input type="radio" name="pob" value="neonatal"><span>Neonatal</span></label>
+            <label class="pill"><input type="radio" name="pob" value="geriatrico"><span>Geriátrico</span></label>
+          </div>
+        </div>
+
+        <p class="step-error" hidden></p>
+        <div class="step-actions">
+          <button type="button" class="prev-step">← Volver</button>
+          <button type="button" class="next-step">Casi listo →</button>
+        </div>
+      </div>
+
+      <div class="form-step" data-step="6">
+        <span class="step-number">06</span>
+        <span class="cofepris-ref">Sección 6 del formato</span>
+        <h2>Finalizar reporte</h2>
+        <p class="step-guide">¿Dónde está hoy el dispositivo y qué se sabía de su uso?</p>
+
+        <div class="input-wrapper">
+          <span class="lbl" id="lblUbic">Ubicación o situación actual</span>
+          <div class="pills" role="radiogroup" aria-labelledby="lblUbic">
+            <label class="pill"><input type="radio" name="ubic" value="fuera"><span>Fuera de operación</span></label>
+            <label class="pill"><input type="radio" name="ubic" value="enUso"><span>En uso</span></label>
+            <label class="pill"><input type="radio" name="ubic" value="destruido"><span>Destruido</span></label>
+            <label class="pill"><input type="radio" name="ubic" value="desconocido"><span>Desconocido</span></label>
+            <label class="pill"><input type="radio" name="ubic" value="otro" id="ubic-otro"><span>Otro</span></label>
+            <input type="text" class="otro-txt" id="ubicOtroTxt" data-check="ubic-otro" placeholder="Ej. Resguardado en Farmacia" aria-label="Otra ubicación, especifique">
+          </div>
+        </div>
+        <div class="input-wrapper">
+          <span class="lbl" id="lblDev">Devuelto a</span>
+          <div class="pills" role="radiogroup" aria-labelledby="lblDev">
+            <label class="pill"><input type="radio" name="dev" value="fabricante"><span>Fabricante</span></label>
+            <label class="pill"><input type="radio" name="dev" value="distribuidor"><span>Distribuidor</span></label>
+            <label class="pill"><input type="radio" name="dev" value="comercializador"><span>Comercializador</span></label>
+            <label class="pill"><input type="radio" name="dev" value="otro" id="dev-otro"><span>Otro</span></label>
+            <input type="text" class="otro-txt" id="devOtroTxt" data-check="dev-otro" placeholder="Especifique" aria-label="Devuelto a otro, especifique">
+          </div>
+        </div>
+
+        <div class="input-wrapper">
+          <span class="lbl">Conocimiento del funcionamiento</span>
+          <div class="yn-row"><span class="q">¿Ha leído el instructivo de uso?</span>
+            <div class="pills"><label class="pill"><input type="radio" name="leyo" value="si"><span>Sí</span></label><label class="pill"><input type="radio" name="leyo" value="no"><span>No</span></label></div></div>
+          <div class="yn-row"><span class="q">¿El instructivo describe claramente cómo usarlo?</span>
+            <div class="pills"><label class="pill"><input type="radio" name="claro" value="si"><span>Sí</span></label><label class="pill"><input type="radio" name="claro" value="no"><span>No</span></label></div></div>
+          <div class="yn-row"><span class="q">¿Ha recibido capacitación para el uso?</span>
+            <div class="pills"><label class="pill"><input type="radio" name="capacitado" value="si"><span>Sí</span></label><label class="pill"><input type="radio" name="capacitado" value="no"><span>No</span></label></div></div>
+        </div>
+
+        <div class="final-check">
+          <div class="check-icon" aria-hidden="true">✓</div>
+          <p>Al enviar, el reporte llega a la Unidad de Tecnovigilancia. No deseches el dispositivo ni su empaque: sepáralo y etiquétalo con el folio que se generará.</p>
+        </div>
+
+        <p class="step-error" hidden></p>
+        <div class="step-actions">
+          <button type="button" class="prev-step">← Revisar</button>
+          <button type="submit" class="submit-pro" id="submitBtn">Enviar Reporte →</button>
+        </div>
+      </div>
+    </form>
+  </main>
+
+  <footer class="pro-footer"><p>© 2026 HSDA · Unidad de Tecnovigilancia · NOM-240-SSA1-2012</p></footer>
+</div>
+
+<div id="statusModal" class="pro-modal" hidden>
+  <div class="modal-glass" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div id="modalLoading">
+      <div class="spinner"></div>
+      <p>Enviando reporte a la Unidad de Tecnovigilancia...</p>
+    </div>
+    <div id="modalSuccess" hidden>
+      <div class="success-ring"></div>
+      <h3 id="modalTitle">Reporte enviado</h3>
+      <p>Folio del reporte:</p>
+      <div class="folio-badge" id="folioNum">---</div>
+      <p class="modal-note">La Unidad de Tecnovigilancia recibió tu reporte. Etiqueta el dispositivo con este folio y entrégalo en Farmacia.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-restart" id="btnRestart">Nuevo reporte</button>
+      </div>
+    </div>
+    <div id="modalError" hidden>
+      <div class="error-ring" aria-hidden="true">!</div>
+      <h3>No se pudo enviar</h3>
+      <p class="modal-note" id="errorText">Revisa tu conexión a internet e intenta de nuevo. Tus respuestas siguen capturadas.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-download" id="btnRetry">Reintentar envío</button>
+        <button type="button" class="btn-back" id="btnBack">Volver al formulario</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const PH = 841.68;
+  const TOTAL = 6;
+  /* URL del Apps Script que envía el reporte por correo */
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbze820IzZxJJxa4WW0SHuK7nBAr3qInoLLQwAKn28w5PVPIa706bRYC2wLblCwfMMS9/exec';
+  /* Datos fijos del hospital (uso interno) */
+  const HOSPITAL = {
+    institucion:'HOSPITAL SAN DIEGO DE ALCALÁ',
+    domicilio:'',
+    lugEstado:'SONORA', lugMunicipio:'HERMOSILLO', lugLocalidad:'HERMOSILLO',
+    lugarNotif:'HERMOSILLO, SONORA'
+  };
+  const MAXW = {folioInterno:180,lugarNotif:118,notifIniciales:190,notifArea:105,opIniciales:120,opOtroTxt:50,pacClave:205,pacEdad:60,pacPeso:55,pacEstatura:95,
+    lugEstado:140,lugMunicipio:155,lugLocalidad:130,lugOtroTxt:90,institucion:380,domicilio:390,evOtroTxt:165,evUsoDifTxt:130,
+    consOtroTxt:190,marca:285,generica:240,modelo:190,serieLote:125,fabricante:205,registro:190,usoOtroTxt:100,ubicOtroTxt:265,devOtroTxt:80,
+    fnDia:28,fnMes:28,fnAnio:28,fiDia:28,fiMes:28,fiAnio:28};
+  const pad = n => String(n).padStart(2,'0');
+  const isoDate = d => d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+  const parseDate = s => { if(!s) return null; const [y,m,d] = s.split('-').map(Number); return new Date(y,m-1,d); };
+  const radio = name => { const r = document.querySelector('input[name="'+name+'"]:checked'); return r ? r.value : ''; };
+  const checked = name => [...document.querySelectorAll('input[name="'+name+'"]:checked')].map(i=>i.value);
+
+  const steps = [...document.querySelectorAll('.form-step')];
+  let current = 0;
+  function show(i){
+    steps[current].classList.remove('active');
+    current = i;
+    steps[current].classList.add('active');
+    $('progressBar').style.width = ((current+1)/TOTAL*100)+'%';
+    window.scrollTo({top:0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+  }
+  function validate(step){
+    const miss = [];
+    step.querySelectorAll('.invalid').forEach(el=>el.classList.remove('invalid'));
+    step.querySelectorAll('[data-req]').forEach(el=>{
+      if(el.dataset.reqGroup){
+        if(!document.querySelector('input[name="'+el.dataset.reqGroup+'"]:checked')){ miss.push(el.dataset.req); el.classList.add('invalid'); }
+      } else if(!el.value.trim()){ miss.push(el.dataset.req); el.classList.add('invalid'); }
+    });
+    step.querySelectorAll('.otro-txt[data-check]').forEach(t=>{
+      const c = $(t.dataset.check);
+      if(c && c.checked && !t.value.trim()){ miss.push('especificar "'+(c.parentElement.textContent.trim()||'otro')+'"'); t.classList.add('invalid'); }
+    });
+    if(step.contains($('profOtroTxt')) && $('prof').value==='Otro' && !$('profOtroTxt').value.trim()){ miss.push('especificar tu profesión'); $('profOtroTxt').classList.add('invalid'); }
+    const err = step.querySelector('.step-error');
+    if(miss.length){ err.textContent = 'Falta: '+miss.join(', ')+'.'; err.hidden = false; return false; }
+    err.hidden = true; return true;
+  }
+  document.querySelectorAll('.next-step').forEach(b=>b.addEventListener('click',()=>{ if(validate(steps[current])) show(current+1); }));
+  document.querySelectorAll('.prev-step').forEach(b=>b.addEventListener('click',()=>show(current-1)));
+  document.querySelectorAll('.otro-txt[data-check]').forEach(t=>t.addEventListener('input',()=>{ if(t.value.trim()) $(t.dataset.check).checked = true; }));
+  $('profOtroTxt').addEventListener('input',()=>{ if($('profOtroTxt').value.trim()) $('prof').value = 'Otro'; });
+  document.addEventListener('input', e=>{ if(e.target.classList) e.target.classList.remove('invalid'); });
+  document.addEventListener('change', e=>{ const g = e.target.closest && e.target.closest('.pills'); if(g) g.classList.remove('invalid'); });
+
+  function collect(){
+    const v = id => $(id).value.trim();
+    return {
+      fechaNotif:v('fechaNotif'), ...HOSPITAL,
+      nIniciales:v('nIniciales').toUpperCase().replace(/[^A-ZÁÉÍÓÚÜÑ]/g,''), notifArea:v('notifArea'), prof:v('prof'), profOtroTxt:v('profOtroTxt'),
+      presento:radio('presento'), opIniciales:v('opIniciales'), operador:radio('operador'), opOtroTxt:v('opOtroTxt'),
+      pacClave:v('pacClave'), pacEdad:v('pacEdad'), pacPeso:v('pacPeso'), pacEstatura:v('pacEstatura'), genero:radio('genero'), resumen:v('resumen'),
+      fechaInc:v('fechaInc'), ev:checked('ev'), evOtroTxt:v('evOtroTxt'), evUsoDifTxt:v('evUsoDifTxt'), descripcion:v('descripcion'),
+      cons:checked('cons'), consOtroTxt:v('consOtroTxt'),
+      marca:v('marca'), generica:v('generica'), modelo:v('modelo'), serieLote:v('serieLote'), fabricante:v('fabricante'), registro:v('registro'),
+      uso:radio('uso'), usoOtroTxt:v('usoOtroTxt'), pob:radio('pob'), ubic:radio('ubic'), ubicOtroTxt:v('ubicOtroTxt'), dev:radio('dev'), devOtroTxt:v('devOtroTxt'),
+      leyo:radio('leyo'), claro:radio('claro'), capacitado:radio('capacitado')
+    };
+  }
+
+  let MAP = null;
+  async function getMap(){ if(!MAP){ MAP = await (await fetch('mapa-formato.json')).json(); } return MAP; }
+  function clean(s){
+    return String(s||'').normalize('NFC').toUpperCase()
+      .replace(/[“”«»]/g,'"').replace(/[‘’]/g,"'").replace(/[–—]/g,'-').replace(/…/g,'...')
+      .replace(/[^\x20-\x7E\xA0-\xFF\n]/g,'?');
+  }
+  function wrap(text, font, size, width){
+    const out = [];
+    clean(text).split(/\n+/).forEach(par=>{
+      let line = '';
+      par.split(/\s+/).filter(Boolean).forEach(w=>{
+        const t = line ? line+' '+w : w;
+        if(font.widthOfTextAtSize(t,size) <= width) line = t;
+        else { if(line) out.push(line); line = w; while(font.widthOfTextAtSize(line,size) > width){ let k=line.length; while(k>1 && font.widthOfTextAtSize(line.slice(0,k),size)>width) k--; out.push(line.slice(0,k)); line=line.slice(k);} }
+      });
+      if(line) out.push(line);
+    });
+    return out;
+  }
+  function toFormData(d, folio){
+    const fn = parseDate(d.fechaNotif), fi = parseDate(d.fechaInc);
+    const t = {
+      folioInterno:'FOLIO INTERNO HSDA: '+folio, lugarNotif:d.lugarNotif, notifIniciales:d.nIniciales, notifArea:d.notifArea,
+      opIniciales:d.opIniciales, lugEstado:d.lugEstado, lugMunicipio:d.lugMunicipio, lugLocalidad:d.lugLocalidad, lugOtroTxt:'HOSPITAL',
+      institucion:d.institucion, domicilio:d.domicilio,
+      pacClave:d.pacClave, pacEdad:d.pacEdad, pacPeso:d.pacPeso, pacEstatura:d.pacEstatura,
+      marca:d.marca, generica:d.generica, modelo:d.modelo, serieLote:d.serieLote, fabricante:d.fabricante, registro:d.registro
+    };
+    if(fn){ t.fnDia=pad(fn.getDate()); t.fnMes=pad(fn.getMonth()+1); t.fnAnio=String(fn.getFullYear()); }
+    if(fi){ t.fiDia=pad(fi.getDate()); t.fiMes=pad(fi.getMonth()+1); t.fiAnio=String(fi.getFullYear()); }
+    if(d.operador==='otro') t.opOtroTxt=d.opOtroTxt;
+    if(d.ev.includes('otros')) t.evOtroTxt=d.evOtroTxt;
+    if(d.ev.includes('usoDiferente')) t.evUsoDifTxt=d.evUsoDifTxt;
+    if(d.cons.includes('otro')) t.consOtroTxt=d.consOtroTxt;
+    if(d.uso==='otro') t.usoOtroTxt=d.usoOtroTxt;
+    if(d.ubic==='otro') t.ubicOtroTxt=d.ubicOtroTxt;
+    if(d.dev==='otro') t.devOtroTxt=d.devOtroTxt;
+    const c = ['tipoNotif.hospital','lugar.otro','sector.privado'];
+    if(d.presento) c.push('presento.'+d.presento);
+    if(d.operador) c.push('operador.'+d.operador);
+    if(d.genero) c.push('genero.'+d.genero);
+    d.ev.forEach(e=>c.push('ev.'+e)); d.cons.forEach(e=>c.push('cons.'+e));
+    ['uso','pob','ubic','dev','leyo','claro','capacitado'].forEach(k=>{ if(d[k]) c.push(k+'.'+d[k]); });
+    return {t, c, para:{descripcion:d.descripcion, resumen:d.resumen}};
+  }
+  async function buildPdf(d, folio){
+    const {PDFDocument, StandardFonts, rgb} = window.PDFLib;
+    const [map, bytes] = await Promise.all([getMap(), fetch('formato-cofepris.pdf').then(r=>{ if(!r.ok) throw new Error('No se pudo cargar el formato'); return r.arrayBuffer(); })]);
+    const pdf = await PDFDocument.load(bytes);
+    const font = await pdf.embedFont(StandardFonts.Helvetica);
+    const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
+    const pages = pdf.getPages(); const ink = rgb(0.04,0.1,0.38);
+    const {t, c, para} = toFormData(d, folio);
+    const annex = [];
+    Object.entries(t).forEach(([k,val])=>{
+      const spec = map.text[k]; const s = clean(val).replace(/\n/g,' ').trim(); if(!spec || !s) return;
+      let [p,x,y,size,align] = spec; const maxw = MAXW[k] || 200;
+      while(size > 5 && font.widthOfTextAtSize(s,size) > maxw) size -= 0.5;
+      let txt = s; while(txt.length>1 && font.widthOfTextAtSize(txt,size) > maxw) txt = txt.slice(0,-1);
+      const w = font.widthOfTextAtSize(txt,size);
+      pages[p].drawText(txt,{x: align==='c' ? x-w/2 : x, y: PH-y, size, font, color:ink});
+      if(txt.length < s.length) annex.push([k.toUpperCase(), s]);
+    });
+    c.forEach(k=>{ const spec = map.check[k]; if(!spec) return; const [p,x,y] = spec; const w = bold.widthOfTextAtSize('X',9);
+      pages[p].drawText('X',{x:x-w/2, y:PH-y-3.2, size:9, font:bold, color:ink}); });
+    const titles = {descripcion:'DESCRIPCIÓN Y CONSECUENCIA DEL INCIDENTE', resumen:'RESUMEN DE LA HISTORIA CLÍNICA DEL PACIENTE'};
+    Object.entries(para).forEach(([k,val])=>{
+      if(!val) return; const [p,x,y,size,width,n] = map.para[k];
+      let lines = wrap(val, font, size, width);
+      if(lines.length > n){ annex.push([titles[k], val]); lines = lines.slice(0,n-1).concat(['(CONTINÚA EN HOJA ANEXA)']); }
+      lines.forEach((ln,i)=>pages[p].drawText(ln,{x, y:PH-y-i*8, size, font, color:ink}));
+    });
+    if(annex.length){
+      let pg = pdf.addPage([595.2, PH]); let y = PH-60;
+      pg.drawText('HOJA ANEXA · NOTIFICACIÓN DE INCIDENTES DE DISPOSITIVOS MÉDICOS',{x:40,y,size:10,font:bold}); y -= 14;
+      pg.drawText(clean('Folio interno HSDA: '+folio),{x:40,y,size:8,font}); y -= 24;
+      annex.forEach(([title,val])=>{
+        if(y < 80){ pg = pdf.addPage([595.2, PH]); y = PH-60; }
+        pg.drawText(clean(title),{x:40,y,size:8.5,font:bold}); y -= 13;
+        wrap(val, font, 8.5, 515).forEach(ln=>{ if(y < 50){ pg = pdf.addPage([595.2, PH]); y = PH-60; } pg.drawText(ln,{x:40,y,size:8.5,font,color:ink}); y -= 11; });
+        y -= 12;
+      });
+    }
+    pdf.setTitle('Notificación '+folio); pdf.setAuthor('Unidad de Tecnovigilancia HSDA');
+    return await pdf.save();
+  }
+
+  const LABELS = {
+    cons:{muerte:'Muerte',intMedica:'Intervención médica',intQuirurgica:'Intervención quirúrgica',danoIndirecto:'Daño indirecto',fetal:'Daño o muerte fetal',deficiencia:'Deficiencia permanente de una función corporal',danoEstructura:'Daño permanente a una estructura corporal',hospitalizacion:'Hospitalización',otro:'Otro'},
+    operador:{tecnico:'Técnico',enfermera:'Enfermera',medico:'Médico',paciente:'Paciente',familiar:'Familiar',otro:'Otro'}
+  };
+  function toBase64(bytes){ let s=''; const n=0x8000; for(let i=0;i<bytes.length;i+=n){ s+=String.fromCharCode.apply(null, bytes.subarray(i,i+n)); } return btoa(s); }
+  function newFolio(){ const d = new Date(); return 'TV-'+String(d.getFullYear()).slice(2)+pad(d.getMonth()+1)+pad(d.getDate())+'-'+pad(d.getHours())+pad(d.getMinutes())+pad(d.getSeconds()); }
+  function view(name){ ['modalLoading','modalSuccess','modalError'].forEach(id=>$(id).hidden = id!==name); $('statusModal').hidden = !name; }
+
+  let pending = null;
+  async function send(){
+    view('modalLoading');
+    try{
+      if(!SCRIPT_URL || SCRIPT_URL.indexOf('script.google.com')<0) throw new Error('config');
+      if(!window.PDFLib) throw new Error('pdflib');
+      const {d, folio} = pending;
+      if(!pending.b64){ pending.b64 = toBase64(await buildPdf(d, folio)); }
+      const cons = d.cons.map(c=>c==='otro' ? 'Otro: '+d.consOtroTxt : LABELS.cons[c]).join(', ') || 'Sin consecuencia marcada';
+      const payload = {
+        folio, archivo:'Notificacion_COFEPRIS_'+folio+'.pdf', pdfBase64:pending.b64,
+        resumen:{
+          fechaNotificacion:d.fechaNotif, fechaIncidente:d.fechaInc, iniciales:d.nIniciales, area:d.notifArea,
+          profesion: d.prof==='Otro' ? d.profOtroTxt : d.prof, presento:d.presento==='si'?'Sí':'No',
+          operador: d.operador==='otro' ? 'Otro: '+d.opOtroTxt : LABELS.operador[d.operador],
+          paciente:[d.pacClave, d.pacEdad && d.pacEdad+' años', d.genero].filter(Boolean).join(' · '),
+          dispositivo:d.generica, marca:d.marca, modelo:d.modelo, lote:d.serieLote, registro:d.registro, fabricante:d.fabricante,
+          consecuencias:cons, descripcion:d.descripcion
+        }
+      };
+      const res = await fetch(SCRIPT_URL, {method:'POST', body:JSON.stringify(payload)});
+      const out = await res.json().catch(()=>({ok:false, error:'respuesta'}));
+      if(!out.ok) throw new Error(out.error || 'envio');
+      $('folioNum').textContent = folio;
+      view('modalSuccess');
+      $('btnRestart').focus();
+    }catch(err){
+      $('errorText').textContent = (err && err.message==='config')
+        ? 'El envío por correo aún no está configurado. Avisa a la Unidad de Tecnovigilancia.'
+        : 'Revisa tu conexión a internet e intenta de nuevo. Tus respuestas siguen capturadas.';
+      view('modalError');
+      $('btnRetry').focus();
+    }
+  }
+
+  $('tvForm').addEventListener('submit', e=>{
+    e.preventDefault();
+    for(let i=0;i<steps.length;i++){ if(!validate(steps[i])){ if(i!==current) show(i); return; } }
+    pending = {d:collect(), folio:newFolio(), b64:null};
+    send();
+  });
+  $('btnRetry').addEventListener('click', ()=>{ if(pending) send(); });
+  $('btnBack').addEventListener('click', ()=>view(null));
+
+  /* Dictado por voz */
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(SR){
+    let rec = null, activeBtn = null;
+    const setIdle = b=>{ if(!b) return; b.classList.remove('recording'); b.querySelector('.voice-label').textContent = 'Dictar por voz'; };
+    document.querySelectorAll('.voice-trigger').forEach(btn=>{
+      btn.hidden = false;
+      btn.addEventListener('click', ()=>{
+        if(rec && activeBtn===btn){ rec.stop(); return; }
+        if(rec){ const prev = activeBtn; activeBtn = null; setIdle(prev); rec.stop(); }
+        const area = $(btn.dataset.target);
+        rec = new SR(); rec.lang = 'es-MX'; rec.continuous = true; rec.interimResults = false;
+        activeBtn = btn; btn.classList.add('recording'); btn.querySelector('.voice-label').textContent = 'Escuchando… toca para detener';
+        rec.onresult = ev=>{
+          for(let i=ev.resultIndex;i<ev.results.length;i++){
+            if(ev.results[i].isFinal){ const t = ev.results[i][0].transcript.trim(); if(t){ area.value += (area.value && !/\s$/.test(area.value) ? ' ' : '') + t; area.classList.remove('invalid'); } }
+          }
+        };
+        rec.onerror = ev=>{ const b = activeBtn; setIdle(b); if(b){ b.querySelector('.voice-label').textContent = ev.error==='not-allowed' ? 'Permite el micrófono' : 'Error, reintentar'; } };
+        rec.onend = ()=>{ if(activeBtn===btn && btn.classList.contains('recording')) setIdle(btn); if(activeBtn===btn){ rec = null; activeBtn = null; } };
+        try{ rec.start(); }catch(e){ setIdle(btn); rec = null; activeBtn = null; }
+      });
+    });
+  }
+
+  $('btnRestart').addEventListener('click', ()=>{
+    $('tvForm').reset();
+    $('fechaNotif').value = isoDate(new Date());
+    document.querySelectorAll('.step-error').forEach(e=>e.hidden = true);
+    pending = null; view(null);
+    show(0);
+  });
+
+  $('fechaNotif').value = isoDate(new Date());
+})();
+</script>
+</body>
+</html>
