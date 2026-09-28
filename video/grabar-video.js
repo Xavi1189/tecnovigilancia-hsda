@@ -8,7 +8,7 @@
  * Requisitos: node + playwright, ffmpeg, python3 con pymupdf (para mostrar el PDF generado),
  * y pdf-lib.min.js local (la CDN puede estar bloqueada). Ver video/README.md.
  *
- * Uso:  node video/grabar-video.js
+ * Uso:  node video/grabar-video.js [--corto] [--sin-musica]
  * Variables opcionales: FFMPEG, PDFLIB_JS, OUT (ruta del .mp4), WORK (carpeta temporal).
  *
  * Nada se envía por correo: el POST al Apps Script se intercepta y se responde localmente.
@@ -231,6 +231,18 @@ function encode(frames, endTime) {
   execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-f', 'concat', '-safe', '0', '-i', list,
     '-vf', `scale=${W * SCALE}:${H * SCALE}:force_original_aspect_ratio=decrease,pad=${W * SCALE}:${H * SCALE}:(ow-iw)/2:(oh-ih)/2:color=#2F4760,fps=30,format=yuv420p`,
     '-c:v', 'libx264', '-preset', 'slow', '-crf', '22', '-movflags', '+faststart', OUT], { stdio: 'inherit' });
+  if (!process.argv.includes('--sin-musica')) agregarMusica(OUT, endTime - frames[0].t);
+}
+
+/* Agrega la música de fondo original (musica.py) al video ya codificado */
+function agregarMusica(video, dur) {
+  const wav = path.join(WORK, 'musica.wav');
+  const tmp = path.join(WORK, 'con-musica.mp4');
+  execFileSync('python3', [path.join(__dirname, 'musica.py'), String(dur), wav], { stdio: 'inherit' });
+  execFileSync(FFMPEG, ['-y', '-loglevel', 'error', '-i', video, '-i', wav, '-map', '0:v', '-map', '1:a',
+    '-af', 'loudnorm=I=-20:TP=-2:LRA=7', '-ar', '48000', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '160k',
+    '-shortest', '-movflags', '+faststart', tmp], { stdio: 'inherit' });
+  fs.copyFileSync(tmp, video);
 }
 
 /* ---------- fechas del caso de ejemplo ---------- */
