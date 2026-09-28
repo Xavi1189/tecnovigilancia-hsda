@@ -1,5 +1,10 @@
 # Video informativo · Tecnovigilancia HSDA
 
+Hay dos versiones:
+
+- **`guia-rapida-1-minuto.mp4`** (52 s): los 6 pasos con lo esencial de cada uno, tres errores que se deben evitar (nombre completo del paciente, descripción vaga, tirar el dispositivo) y el cierre con el QR. Pensada para compartir por WhatsApp o proyectar en pases de guardia.
+- **`guia-tecnovigilancia-hsda.mp4`** (~6 min): la capacitación completa, descrita abajo.
+
 `guia-tecnovigilancia-hsda.mp4` (1920×1080, ~6 min, sin audio, con textos en pantalla) enseña al personal a reportar un incidente con un dispositivo médico en la app y muestra los errores de llenado más comunes junto con su corrección.
 
 Se grabó sobre la app real (`index.html`) con un **caso ficticio**: en UCI, una bomba de infusión no suena la alarma de oclusión. No se envió ningún correo, porque el envío al Apps Script se intercepta durante la grabación.
@@ -29,6 +34,7 @@ Si la app cambia, se puede regenerar el video. Hace falta node con `playwright` 
 npm i pdf-lib@1.17.1 playwright
 pip install pymupdf
 node video/grabar-video.js          # escribe video/guia-tecnovigilancia-hsda.mp4
+node video/grabar-video.js --corto  # escribe video/guia-rapida-1-minuto.mp4
 ```
 
 Variables opcionales: `FFMPEG`, `PDFLIB_JS`, `PLAYWRIGHT`, `OUT`, `WORK`. Los textos y los tiempos de cada escena están en `grabar-video.js`.

@@ -21,7 +21,10 @@ const { chromium } = require(process.env.PLAYWRIGHT || 'playwright');
 
 const ROOT = path.resolve(__dirname, '..');
 const WORK = process.env.WORK || path.join(require('os').tmpdir(), 'tv-video');
-const OUT = process.env.OUT || path.join(__dirname, 'guia-tecnovigilancia-hsda.mp4');
+/* --corto: guía rápida de un minuto como máximo */
+const CORTO = process.argv.includes('--corto');
+const SPEED = CORTO ? 0.5 : 1;
+const OUT = process.env.OUT || path.join(__dirname, CORTO ? 'guia-rapida-1-minuto.mp4' : 'guia-tecnovigilancia-hsda.mp4');
 const FFMPEG = process.env.FFMPEG || 'ffmpeg';
 const PDFLIB_JS = process.env.PDFLIB_JS || require.resolve('pdf-lib/dist/pdf-lib.min.js');
 const APP_URL = 'https://tecnovigilancia-hsda-reportes.vercel.app';
@@ -70,7 +73,7 @@ body{justify-content:flex-end!important;padding-right:44px}
 #tvPanel .foot{margin-top:auto;font-size:.9rem;opacity:.7}
 #tvPanel .fade{transition:opacity .35s ease}
 #tvPanel.swap .fade{opacity:0}
-#tvCursor{position:fixed;left:0;top:0;width:30px;height:30px;z-index:6000;pointer-events:none;transition:transform .7s cubic-bezier(.45,.05,.2,1);transform:translate(900px,650px)}
+#tvCursor{position:fixed;left:0;top:0;width:30px;height:30px;z-index:6000;pointer-events:none;transition:transform ${0.7 * SPEED}s cubic-bezier(.45,.05,.2,1);transform:translate(900px,650px)}
 #tvCursor svg{filter:drop-shadow(0 3px 4px rgba(0,0,0,.35))}
 .tvRipple{position:fixed;width:44px;height:44px;margin:-22px 0 0 -22px;border-radius:50%;border:3px solid #3C5775;z-index:5999;pointer-events:none;animation:tvRip .6s ease-out forwards}
 @keyframes tvRip{from{transform:scale(.3);opacity:1}to{transform:scale(1.6);opacity:0}}
@@ -159,11 +162,11 @@ function makeDirector(page) {
     },
     async moveTo(loc) {
       await loc.evaluate(el => el.scrollIntoView({ behavior: 'smooth', block: 'center' }));
-      await sleep(650);
+      await sleep(650 * SPEED);
       const b = await loc.boundingBox();
       cx = b.x + Math.min(b.width / 2, 60); cy = b.y + b.height / 2;
       await page.evaluate(([x, y]) => { document.getElementById('tvCursor').style.transform = `translate(${x - 4}px,${y - 2}px)`; }, [cx, cy]);
-      await sleep(750);
+      await sleep(750 * SPEED);
     },
     async click(loc) {
       await d.moveTo(loc);
@@ -172,7 +175,7 @@ function makeDirector(page) {
         document.body.appendChild(r); setTimeout(() => r.remove(), 700);
       }, [cx, cy]);
       await loc.click({ force: true });
-      await sleep(450);
+      await sleep(450 * SPEED);
     },
     async type(loc, text, delay = 55) {
       await d.click(loc);
@@ -201,7 +204,7 @@ async function startCapture(page) {
   cdp.on('Page.screencastFrame', async ({ data, metadata, sessionId }) => {
     const f = path.join(WORK, 'frames', String(frames.length).padStart(6, '0') + '.jpg');
     fs.writeFileSync(f, Buffer.from(data, 'base64'));
-    frames.push({ f, t: metadata.timestamp });
+    frames.push({ f, t: metadata.timestamp, wall: Date.now() / 1000 });
     cdp.send('Page.screencastFrameAck', { sessionId }).catch(() => {});
   });
   await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 90, maxWidth: W * SCALE, maxHeight: H * SCALE, everyNthFrame: 1 });
@@ -209,6 +212,8 @@ async function startCapture(page) {
     async stop() {
       await sleep(500);
       await cdp.send('Page.stopScreencast');
+      /* El último cuadro dura hasta que termina la escena, no hasta que dejó de cambiar la pantalla */
+      frames.end = Date.now() / 1000 - 0.5 + (frames[0].t - frames[0].wall);
       return frames;
     }
   };
@@ -233,6 +238,68 @@ const hoy = new Date();
 const ayer = new Date(hoy.getTime() - 86400000);
 const iso = x => x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0') + '-' + String(x.getDate()).padStart(2, '0');
 
+function tarjetaQr(titulo, cuerpo) {
+  const qr = fs.readFileSync(path.join(__dirname, 'qr-app.svg'), 'utf8').replace(/<\?xml[^>]*\?>/, '');
+  return `<div class="in"><div class="qr">${qr.replace('<svg ', '<svg style="width:100%;height:auto;display:block" ')}</div><div class="col">
+    <div class="kick">Unidad de Tecnovigilancia · HSDA</div>
+    <h1>${titulo}</h1>${cuerpo}
+    <span class="url">${APP_URL.replace('https://', '')}</span></div></div>`;
+}
+
+/* ---------- Guía rápida (≤ 1 minuto) ---------- */
+async function guiaCorta({ page, d, $, pill, chk, next }) {
+  await d.card(`<div class="in"><div class="phone"><img src="/__work/movil.png" alt=""></div><div class="col">
+    <div class="kick">Guía rápida · 1 minuto</div>
+    <h1>Reporta un incidente con un dispositivo médico</h1>
+    <ul><li>Desde tu celular o computadora</li><li>Sin usuario ni contraseña</li><li>6 pasos; la app te avisa si falta algo</li></ul></div></div>`, 6000);
+  await d.panel({ chip: 'Paso 1 de 6', title: '¿Quién reporta?', text: 'Tus iniciales <b>empezando por el apellido paterno</b>, tu área y si tú lo presentaste.' });
+  await d.hideCard();
+  await d.type($('#nIniciales'), 'RHA', 90);
+  await $('#notifArea').selectOption('UCI');
+  await d.click(pill('presento', 'si'));
+  await sleep(2000);
+  await d.click(next());
+
+  await d.panel({ chip: 'Paso 2 de 6', title: 'Operador y paciente', text: 'Del paciente, solo <b>iniciales o clave</b>.',
+    badge: '✗ Nunca escribas su nombre completo.', kind: 'bad' });
+  await d.click(pill('operador', 'enfermera'));
+  await d.type($('#pacClave'), 'PLJ', 90);
+  await $('#pacEdad').fill('67');
+  await sleep(2600);
+  await d.click(next());
+
+  await d.panel({ chip: 'Paso 3 de 6', title: '¿Qué pasó?', text: 'La fecha en que <b>ocurrió</b> (no la de hoy) y marca lo que falló.', badge: '' });
+  await $('#fechaInc').fill(iso(ayer));
+  await d.click(chk('ev', 'alarma'));
+  await sleep(2300);
+  await d.click(next());
+
+  await d.panel({ chip: 'Paso 4 de 6', title: 'Describe lo sucedido', text: '<b>Qué se hacía, qué falló, qué le pasó al paciente y qué se hizo.</b> Puedes dictarlo por voz.',
+    badge: '✗ “No sirvió la bomba” es demasiado vago.', kind: 'bad' });
+  await d.type($('#descripcion'), 'Durante la infusión de ceftriaxona la bomba no activó la alarma de oclusión; el medicamento no pasó por 40 min. Se cambió la bomba y se completó la dosis. Sin daño al paciente.', 6);
+  await sleep(3200);
+  await d.click(next());
+
+  await d.panel({ chip: 'Paso 5 de 6', title: 'El dispositivo', text: 'Copia los datos <b>de la etiqueta</b>: nombre, lote o serie y registro sanitario.', badge: '' });
+  await d.type($('#generica'), 'Bomba de infusión volumétrica', 12);
+  await $('#serieLote').fill('SN-0045821');
+  await $('#registro').fill('1234E2020 SSA');
+  await sleep(2500);
+  await d.click(next());
+
+  await d.panel({ chip: 'Paso 6 de 6', title: 'Enviar', text: '¿Dónde está hoy el dispositivo? Luego toca <b>Enviar Reporte</b>.',
+    badge: '✗ No tires el dispositivo ni su empaque.', kind: 'bad' });
+  await d.click(pill('ubic', 'fuera'));
+  await sleep(1200);
+  await d.click($('#submitBtn'));
+  await page.locator('#modalSuccess').waitFor({ state: 'visible', timeout: 30000 });
+  await d.panel({ chip: 'Listo', title: 'Reporte enviado', text: 'Anota el <b>folio</b> en el dispositivo y entrégalo en Farmacia.',
+    badge: '✓ Llega a Tecnovigilancia con el formato COFEPRIS ya lleno.', kind: 'ok' });
+  await sleep(4000);
+
+  await d.card(tarjetaQr('Ante la duda, repórtalo', '<p>Escanea el código o entra a:</p>'), 6500);
+}
+
 (async () => {
   const srv = await serve();
   const base = `http://127.0.0.1:${srv.address().port}/`;
@@ -253,7 +320,7 @@ const iso = x => x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0
   await page.route('**/pdf-lib.min.js', r => r.fulfill({ path: PDFLIB_JS, contentType: 'text/javascript' }));
   await page.route('https://script.google.com/**', async r => {
     try { pdfB64 = JSON.parse(r.request().postData()).pdfBase64; } catch (e) {}
-    await sleep(1800);
+    await sleep(CORTO ? 600 : 1800);
     r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ ok: true }) });
   });
   await page.goto(base, { waitUntil: 'networkidle' });
@@ -268,6 +335,8 @@ const iso = x => x.getFullYear() + '-' + String(x.getMonth() + 1).padStart(2, '0
   const cap = await startCapture(page);
   const t0 = Date.now();
 
+  if (CORTO) await guiaCorta({ page, d, $, pill, chk, next });
+  else {
   /* ===== 1. Portada ===== */
   await d.card(`<div class="in"><img class="logo" src="hsda-logo.jpg" alt=""><div class="col">
     <div class="kick">Hospital San Diego de Alcalá · Unidad de Tecnovigilancia</div>
@@ -443,15 +512,12 @@ doc=pymupdf.open(sys.argv[1]); doc[0].get_pixmap(dpi=170).save(sys.argv[2])`, pd
     </div></div></div>`, 17000);
 
   /* ===== Cierre ===== */
-  const qr = fs.readFileSync(path.join(__dirname, 'qr-app.svg'), 'utf8').replace(/<\?xml[^>]*\?>/, '');
-  await d.card(`<div class="in"><div class="qr">${qr.replace('<svg ', '<svg style="width:100%;height:auto;display:block" ')}</div><div class="col">
-    <div class="kick">Unidad de Tecnovigilancia · HSDA</div>
-    <h1>Ante la duda, repórtalo</h1>
-    <p>Reportar no es buscar culpables: es cuidar a nuestros pacientes. Escanea el código o entra a:</p>
-    <span class="url">${APP_URL.replace('https://', '')}</span></div></div>`, 10000);
+  await d.card(tarjetaQr('Ante la duda, repórtalo', '<p>Reportar no es buscar culpables: es cuidar a nuestros pacientes. Escanea el código o entra a:</p>'), 10000);
+
+  }
 
   const frames = await cap.stop();
-  const endTime = frames[frames.length - 1].t + 0.5;
+  const endTime = Math.max(frames.end, frames[frames.length - 1].t + 0.5);
   await browser.close();
   srv.close();
   console.log(`Cuadros: ${frames.length} · duración ≈ ${Math.round((Date.now() - t0) / 1000)} s · codificando…`);
